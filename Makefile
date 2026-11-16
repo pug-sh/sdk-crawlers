@@ -15,10 +15,7 @@
 
 BUF          ?= buf
 PROTO_MODULE := buf.build/pugsh/pug
-# Empty until pug's proto/common/crawlers/v1 is on the BSR: set it from `make proto-latest`, then
-# `make sync-protos agents`. Until then proto/ is a copy of ../pug/proto, and check-proto-pin, the
-# release gate, fails.
-PROTO_COMMIT :=
+PROTO_COMMIT := c78730668928485697067836bcbc4a1b
 PROTO_PATHS  := --path common/crawlers/v1
 
 sync-protos:

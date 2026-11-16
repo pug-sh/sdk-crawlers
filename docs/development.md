@@ -41,3 +41,15 @@ on a tie. The generator drops list entries whose name holds a table token, as th
 them, so `NotGooglebot` matches nothing. The server matches again and has the last word; the
 package only decides what to send. `src/match.test.ts` holds the server's sample user agent for
 every table row.
+
+## Releasing
+
+Bump `version` in `package.json`, commit as `Release vX.Y.Z`, then tag `vX.Y.Z` and push the commit
+and the tag. The tag runs `.github/workflows/release.yml`: it checks that the tag names
+`package.json`'s version, runs `make check-proto-pin ci`, packs, and publishes that tarball to npm
+through trusted publishing, with provenance.
+
+One-time setup: npmjs.com → `@pug-sh/crawlers` → Settings → **Trusted publishing** → GitHub Actions,
+organization `pug-sh`, repository `sdk-crawlers`, workflow `release.yml`, with `npm publish`
+allowed: a new configuration allows only `npm stage publish` by default, which rejects the
+workflow's `npm publish`. It must make its first publish within 2 days of being added.
