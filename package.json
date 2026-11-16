@@ -1,0 +1,62 @@
+{
+  "name": "@pug-sh/crawlers",
+  "version": "0.1.0",
+  "description": "Report the AI crawlers, search engines and SEO tools that read your site to Pug, from your own request handling.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "homepage": "https://pug.sh",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pug-sh/sdk-crawlers.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pug-sh/sdk-crawlers/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build",
+    "lint": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "tsc --noEmit",
+    "knip": "knip",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "analytics",
+    "crawlers",
+    "ai",
+    "bots",
+    "seo",
+    "pug"
+  ],
+  "author": "pug.sh",
+  "license": "MIT",
+  "devDependencies": {
+    "@biomejs/biome": "2.6.3",
+    "@types/node": "^26.6.5",
+    "crawler-user-agents": "1.66.0",
+    "knip": "^6.41.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.2"
+  }
+}
