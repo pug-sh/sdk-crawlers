@@ -1,6 +1,6 @@
 {
   "name": "@pug-sh/crawlers",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Report the AI crawlers, search engines and SEO tools that read your site to Pug, from your own request handling.",
   "type": "module",
   "main": "dist/index.js",
