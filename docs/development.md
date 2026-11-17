@@ -6,31 +6,50 @@ the design is pug's `docs/architecture/ai-crawlers.md`.
 ## Toolchain
 
 bun (packages and scripts), biome (format), tsc (types and `dist/`), vitest (tests), knip (unused
-code), and the [buf CLI](https://buf.build/docs/installation) for `make agents`. The package has no
-runtime dependencies, and must keep none: it runs inside customers' edge functions.
+code), and the [buf CLI](https://buf.build/docs/installation) for `make codegen`, which also runs
+protoc-gen-es from `node_modules`, so `bun install` first. The package has no runtime dependencies,
+and must keep none: it runs inside customers' edge functions.
 
-## The agent list
+## Generated code
 
-`src/agents.generated.ts` is generated; don't edit it. `make agents` rebuilds it from:
+The protos are vendored under `proto/` from the Buf Schema Registry commit the Makefile pins, and
+`make codegen` rebuilds three things from them; don't edit those.
 
-- **The crawler table**: pug's `proto/common/crawlers/v1`, vendored under `proto/` from the Buf
-  Schema Registry commit the Makefile pins. `buf build` turns it into a descriptor set whose
-  options read as plain JSON, so the generator needs no protobuf runtime. Rows marked `deprecated`
-  are left out, as the server leaves them out.
+**The agent list**, `src/agents.generated.ts`, from:
+
+- **The crawler table**: pug's `proto/common/crawlers/v1`. `buf build` turns it into a descriptor
+  set whose options read as plain JSON, so the generator needs no protobuf runtime. Rows marked
+  `deprecated` are left out, as the server leaves them out.
 - **crawler-user-agents**: its `search-engine` and `seo` entries, at the exact version in
   `package.json`. Keep that version equal to the one pug's `go.mod` pins: the server matches with
   the Go module of the same list, and a version ahead of it sends agents the server drops.
 
-| Command                | What it does                                                                      |
-| ---------------------- | --------------------------------------------------------------------------------- |
-| `make agents`          | Regenerate `src/agents.generated.ts`. Pass `BUF=` for a buf that isn't on `PATH`. |
-| `make sync-protos`     | Re-vendor `proto/` from `PROTO_COMMIT`. Needs BSR network.                        |
-| `make proto-latest`    | Print the newest commit of `buf.build/pugsh/pug` on main.                         |
-| `make check-proto-pin` | Fail if `proto/` differs from `PROTO_COMMIT`. The release gate.                   |
-| `make ci`              | Regenerate, fail on drift, then lint, typecheck, knip, test and build.            |
+**The procedure and limits**, `src/events.generated.ts`: the path of `BatchCreate`, and the
+`buf.validate` limits on the two fields a report fills from a site's request, an auto property's
+`string_value` and the client's `user_agent`, found through `BatchCreate`'s types in the same
+descriptor set. A renamed rpc, or any change to those fields' rules but the limits' values, fails
+the generator: the package can't tell whether its reports still keep them.
 
-To take a table change: bump `PROTO_COMMIT` in the `Makefile`, run `make sync-protos agents`, and
-commit `proto/` with the generated file.
+**The JSON types**, `src/gen`: protobuf-es declarations for `sdk/events/v1` and
+`common/v1/property_value.proto`. `src/crawlers.ts` checks the report it sends against them, and
+reads the response through them, unchecked. It imports them as types only, so they never reach
+`dist/`, and a field renamed upstream fails `tsc`. `tsconfig.json` keeps `skipLibCheck` off: with it
+on, a file `src/gen` imports but `buf.gen.yaml` doesn't generate would turn its types into `any`
+without an error. They type an `int64` as a string, its canonical JSON form, so `$status_code` goes
+as `"404"`.
+
+| Command                | What it does                                                           |
+| ---------------------- | ---------------------------------------------------------------------- |
+| `make codegen`         | Regenerate all three. Pass `BUF=` for a buf that isn't on `PATH`.      |
+| `make sync-protos`     | Re-vendor `proto/` from `PROTO_COMMIT`. Needs BSR network.             |
+| `make proto-latest`    | Print the newest commit of `buf.build/pugsh/pug` on main.              |
+| `make check-proto-pin` | Fail if `proto/` differs from `PROTO_COMMIT`. The release gate.        |
+| `make ci`              | Regenerate, fail on drift, then lint, typecheck, knip, test and build. |
+
+To take a proto change: bump `PROTO_COMMIT` in the `Makefile`, run `make sync-protos codegen`, and
+commit `proto/` with the generated files. Codegen doesn't cover what `IncomingEvent`'s rules ask of
+a `crawler_request`, its `kind`, `client` and `$url`, which `src/crawlers.ts` writes by hand, so
+check them in the `proto/` diff.
 
 ## Matching
 

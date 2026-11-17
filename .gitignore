@@ -9,6 +9,6 @@ coverage/
 .env
 .env.*
 
-# Scratch dirs for `make agents` and `make check-proto-pin`
+# Scratch dirs for `make codegen` and `make check-proto-pin`
 .codegen-tmp/
 .proto-pin-check/

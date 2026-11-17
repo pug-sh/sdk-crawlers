@@ -1,0 +1,14 @@
+version: v2
+clean: true
+inputs:
+  - directory: proto
+    paths:
+      - proto/sdk/events/v1
+      - proto/common/v1/property_value.proto
+plugins:
+  - local: node_modules/.bin/protoc-gen-es
+    out: src/gen
+    opt:
+      - target=dts
+      - json_types=true
+      - import_extension=js

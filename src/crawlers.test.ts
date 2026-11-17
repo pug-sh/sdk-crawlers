@@ -71,7 +71,7 @@ describe('track', () => {
       occurTime: expect.stringMatching(/^\d{4}-\d\d-\d\dT/),
       kind: 'crawler_request',
       client: { userAgent: gptBot, ip: '20.171.207.5' },
-      autoProperties: { $url: { stringValue: 'https://example.com/pricing' }, $status_code: { intValue: 404 } },
+      autoProperties: { $url: { stringValue: 'https://example.com/pricing' }, $status_code: { intValue: '404' } },
     })
   })
 
@@ -390,7 +390,7 @@ describe('express', () => {
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
     expect(sent().event).toMatchObject({
       client: { ip: '::ffff:20.171.207.5' },
-      autoProperties: { $url: { stringValue: 'https://example.com/blog/post' }, $status_code: { intValue: 301 } },
+      autoProperties: { $url: { stringValue: 'https://example.com/blog/post' }, $status_code: { intValue: '301' } },
     })
   })
 

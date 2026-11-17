@@ -1,11 +1,9 @@
+import { maxPropertyLength, maxUserAgentBytes, procedure } from './events.generated.js'
+import type { BatchCreateRequestJson, BatchCreateResponseJson } from './gen/sdk/events/v1/events_pb.js'
 import { type Category, categories, matchAgent, truncate } from './match.js'
 
 const defaultEndpoint = 'https://api.pugs.dev'
-const procedure = '/sdk.events.v1.EventsService/BatchCreate'
 const timeoutMs = 2000
-// The server's limits: $url in characters, a user agent in bytes.
-const maxURLLength = 1024
-const maxUserAgentBytes = 2048
 // Framework internals, scripts, styles, images and fonts: crawlers fetch them too, which adds volume and no insight.
 const asset = /^\/_next\/|\.(?:js|mjs|cjs|css|map|png|jpe?g|gif|svg|ico|webp|avif|bmp|tiff?|woff2?|ttf|otf|eot)$/i
 const ipv4 = /^(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/
@@ -67,12 +65,6 @@ interface Report {
   userAgent: string
 }
 
-interface BatchResult {
-  dropped?: number
-  droppedByReason?: Record<string, number>
-  invalidEvents?: { violations?: string[] }[]
-}
-
 const warned = new Set<string>()
 
 function warnOnce(kind: string, message: string, detail?: unknown): void {
@@ -124,7 +116,7 @@ function collector(options: CrawlersOptions): Crawlers {
     if (page.protocol !== 'http:' && page.protocol !== 'https:') return undefined
     if (!options.includeAssets && asset.test(page.pathname)) return undefined
     const url = page.origin + page.pathname
-    if (url.length > maxURLLength) return undefined
+    if (url.length > maxPropertyLength) return undefined
     const agent = matchAgent(userAgent)
     if (!agent || !wanted.has(agent.category) || skip.has(agent.name.toLowerCase())) return undefined
     return {
@@ -209,14 +201,14 @@ async function send(
           eventId: report.eventId,
           occurTime: report.occurTime,
           kind: 'crawler_request',
-          client: { userAgent: report.userAgent, ...(ip ? { ip } : {}) },
+          client: { userAgent: report.userAgent, ip },
           autoProperties: {
             $url: { stringValue: report.url },
-            ...(statusCode ? { $status_code: { intValue: statusCode } } : {}),
+            ...(statusCode ? { $status_code: { intValue: String(statusCode) } } : {}),
           },
         },
       ],
-    })
+    } satisfies BatchCreateRequestJson)
     let failure: unknown
     for (let attempt = 0; attempt < 2; attempt++) {
       let res: Response
@@ -233,7 +225,7 @@ async function send(
         continue
       }
       if (res.ok) {
-        warnDropped((await res.json().catch(() => null)) as BatchResult | null)
+        warnDropped((await res.json().catch(() => null)) as BatchCreateResponseJson | null)
         return
       }
       failure = `${res.status}: ${await reason(res)}`
@@ -249,7 +241,7 @@ async function send(
 }
 
 // A 200 can still drop the event, as when it breaks a rule or names no crawler the server knows.
-function warnDropped(result: BatchResult | null): void {
+function warnDropped(result: BatchCreateResponseJson | null): void {
   if (!result?.dropped) return
   warnOnce(
     'dropped',
