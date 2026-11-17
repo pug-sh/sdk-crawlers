@@ -217,7 +217,9 @@ async function send(
           method: 'POST',
           headers: { 'content-type': 'application/json', 'x-api-key': apiKey },
           body,
-          redirect: 'error',
+          // Never follow a redirect, which would hand the key to another host. Workers throw on
+          // 'error', so a 3xx comes back as a refusal instead.
+          redirect: 'manual',
           signal: AbortSignal.timeout(timeoutMs),
         })
       } catch (err) {

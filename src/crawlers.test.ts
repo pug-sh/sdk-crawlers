@@ -63,7 +63,7 @@ describe('track', () => {
     expect(url).toBe(endpoint)
     expect(init).toMatchObject({
       method: 'POST',
-      redirect: 'error',
+      redirect: 'manual',
       headers: { 'content-type': 'application/json', 'x-api-key': 'prv_test' },
     })
     expect(event).toEqual({
@@ -305,6 +305,14 @@ describe('delivery', () => {
     await track(c, request('https://example.com/', gptBot))
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('a private API key is required'))
+  })
+
+  it("doesn't follow or retry a redirect", async () => {
+    fetchMock.mockResolvedValue(new Response('', { status: 307, headers: { location: 'https://elsewhere.example/' } }))
+    const c = await collector()
+    await track(c, request('https://example.com/', gptBot))
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('refused a report (307'))
   })
 
   it('warns once for each kind of failure', async () => {
