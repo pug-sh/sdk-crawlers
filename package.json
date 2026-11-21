@@ -1,7 +1,7 @@
 {
   "name": "@pug-sh/crawlers",
   "version": "0.1.2",
-  "description": "Report the AI crawlers, search engines and SEO tools that read your site to Pug, from your own request handling.",
+  "description": "AI crawler analytics: report the AI crawlers, search engines and SEO tools that read your site to Pug, from your own request handling.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,7 +20,7 @@
   "engines": {
     "node": ">=20"
   },
-  "homepage": "https://pug.sh",
+  "homepage": "https://pug.sh/blog/track-ai-crawlers",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pug-sh/sdk-crawlers.git"
@@ -42,11 +42,26 @@
     "test:watch": "vitest"
   },
   "keywords": [
-    "analytics",
+    "ai-crawlers",
     "crawlers",
-    "ai",
+    "crawler-analytics",
     "bots",
+    "bot-traffic",
+    "gptbot",
+    "claudebot",
+    "chatgpt-user",
+    "perplexitybot",
+    "googlebot",
+    "ai-seo",
     "seo",
+    "llm",
+    "analytics",
+    "cloudflare-workers",
+    "vercel",
+    "nextjs",
+    "hono",
+    "express",
+    "middleware",
     "pug"
   ],
   "author": "pug.sh",
