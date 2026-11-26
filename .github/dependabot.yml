@@ -1,0 +1,31 @@
+version: 2
+updates:
+  # "bun", not "npm": the npm ecosystem updates package-lock.json, which doesn't exist here, and
+  # would leave bun.lock stale.
+  - package-ecosystem: "bun"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    # src/gen is stamped with the protoc-gen-es version, so these PRs fail check-codegen until
+    # `make codegen` is committed onto them. Grouping means doing that once: bufbuild for majors,
+    # and bun-minor-patch, which holds every minor and patch update, for the rest.
+    groups:
+      bufbuild:
+        patterns: ["@bufbuild/*"]
+        update-types: ["major"]
+      bun-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+    ignore:
+      # Must match the version pug's go.mod pins, so the package sends what the server classifies.
+      - dependency-name: "crawler-user-agents"
+
+  # The workflows pin actions by commit; without this they would never move.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      actions-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
