@@ -18,7 +18,7 @@
 
 BUF          ?= buf
 PROTO_MODULE := buf.build/pugsh/pug
-PROTO_COMMIT := c78730668928485697067836bcbc4a1b
+PROTO_COMMIT := 4b577f9e36044955bed2bb8cf15ec0c3
 PROTO_PATHS  := --path common/crawlers/v1 --path sdk/events/v1
 
 sync-protos:

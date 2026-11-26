@@ -4,7 +4,7 @@
 
 import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import type { Message } from "@bufbuild/protobuf";
-import type { Timestamp, TimestampJson } from "@bufbuild/protobuf/wkt";
+import type { Duration, DurationJson, Timestamp, TimestampJson } from "@bufbuild/protobuf/wkt";
 
 /**
  * Describes the file common/v1/property_value.proto.
@@ -17,9 +17,11 @@ export declare const file_common_v1_property_value: GenFile;
  * oneof.required option below.
  *
  * Lists, objects, and other compound types are intentionally not included
- * in this iteration — only the five primitive types supported by the
- * ClickHouse Variant storage target. New variants can be added later as
- * additive oneof entries (wire-compatible).
+ * in this iteration: only primitive types the ClickHouse Variant storage
+ * target can hold. A server older than a oneof case sees no case set and
+ * drops the event, and a server before v0.0.55 rejects the whole batch. An
+ * events worker older than the case, behind a newer server, sends the whole
+ * batch to the DLQ. So SDKs must not send a case their deployment predates.
  *
  * @generated from message common.v1.PropertyValue
  */
@@ -75,6 +77,15 @@ export declare type PropertyValue = Message<"common.v1.PropertyValue"> & {
      */
     value: Timestamp;
     case: "timestampValue";
+  } | {
+    /**
+     * Stored as seconds in the Float64 Variant slot, like double_value, so
+     * SUM, AVG and numeric filters work on it.
+     *
+     * @generated from field: google.protobuf.Duration duration_value = 6;
+     */
+    value: Duration;
+    case: "durationValue";
   } | { case: undefined; value?: undefined };
 };
 
@@ -84,9 +95,11 @@ export declare type PropertyValue = Message<"common.v1.PropertyValue"> & {
  * oneof.required option below.
  *
  * Lists, objects, and other compound types are intentionally not included
- * in this iteration — only the five primitive types supported by the
- * ClickHouse Variant storage target. New variants can be added later as
- * additive oneof entries (wire-compatible).
+ * in this iteration: only primitive types the ClickHouse Variant storage
+ * target can hold. A server older than a oneof case sees no case set and
+ * drops the event, and a server before v0.0.55 rejects the whole batch. An
+ * events worker older than the case, behind a newer server, sends the whole
+ * batch to the DLQ. So SDKs must not send a case their deployment predates.
  *
  * @generated from message common.v1.PropertyValue
  */
@@ -133,6 +146,14 @@ export declare type PropertyValueJson = {
    * @generated from field: google.protobuf.Timestamp timestamp_value = 5;
    */
   timestampValue?: TimestampJson;
+
+  /**
+   * Stored as seconds in the Float64 Variant slot, like double_value, so
+   * SUM, AVG and numeric filters work on it.
+   *
+   * @generated from field: google.protobuf.Duration duration_value = 6;
+   */
+  durationValue?: DurationJson;
 };
 
 /**
